@@ -1,0 +1,3 @@
+# Coding-Animation
+
+project notes:
