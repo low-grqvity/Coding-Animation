@@ -6,10 +6,11 @@ public class Mono : MonoBehaviour
     public Render render;
 
     public AnimationCurve curve;
-    public LineRenderer line;
+    // public LineRenderer line;
     public Vector3 a,b;
     public float t;
     public GameObject thingy;
+    public GameObject ballPrefab;
     // Start is called before the first frame update
     void Start()
     {
@@ -19,6 +20,11 @@ public class Mono : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKey(KeyCode.Space))
+        {
+            Instantiate(ballPrefab);
+        }
+
         if(Input.GetKey(KeyCode.A)&& t>0)
         {
             t -= Time.deltaTime/1;
@@ -29,8 +35,8 @@ public class Mono : MonoBehaviour
         }
         thingy.transform.position = Vector3.LerpUnclamped(a,b,curve.Evaluate(t));
 
-        line.SetPosition(0, a);
-        line.SetPosition(1, b);
+        // line.SetPosition(0, a);
+        // line.SetPosition(1, b);
         render.Update();
     }
 }
