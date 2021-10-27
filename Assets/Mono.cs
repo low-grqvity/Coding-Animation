@@ -27,7 +27,32 @@ public class Mono : MonoBehaviour
 
     if (Input.GetKey(KeyCode.A) && t > 0)
     {
-      t -= Time.deltaTime / 1;
+        if (Input.GetKey(KeyCode.Space))
+        {
+            Instantiate(ballPrefab);
+        }
+
+        if(Input.GetKey(KeyCode.A)&& t>0)
+        {
+            t -= Time.deltaTime/1;
+        }
+        if(Input.GetKey(KeyCode.D)&& t<1)
+        {
+            t += Time.deltaTime/1;
+        }
+        thingy.transform.position = Vector3.LerpUnclamped(a,b,curve.Evaluate(t));
+
+        // BagelOpera -> int bagelOpera = 0;
+        // if (*insert what you want to do*); -> for (int i = 0; i < 10; i++)
+        // def *function name* -> void NameFunction(int variable) { //code }
+        
+
+
+        
+
+        // line.SetPosition(0, a);
+        // line.SetPosition(1, b);
+        render.Update();
     }
     if (Input.GetKey(KeyCode.D) && t < 1)
     {
