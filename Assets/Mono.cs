@@ -3,97 +3,96 @@ using System;
 
 public class Mono : MonoBehaviour
 {
-    public Render render;
+  public Render render;
 
-    public AnimationCurve curve;
-    // public LineRenderer line;
-    public Vector3 a,b;
-    public float t;
-    public GameObject thingy;
-    public GameObject ballPrefab;
-    // Start is called before the first frame update
-    void Start()
+  public AnimationCurve curve;
+  // public LineRenderer line;
+  public Vector3 a, b;
+  public float t;
+  public GameObject thingy;
+  public GameObject ballPrefab;
+  // Start is called before the first frame update
+  void Start()
+  {
+    render.Start(this);
+  }
+
+  // Update is called once per frame
+  void Update()
+  {
+    if (Input.GetKey(KeyCode.Space))
     {
-        render.Start(this);
+      Instantiate(ballPrefab);
     }
 
-    // Update is called once per frame
-    void Update()
+    if (Input.GetKey(KeyCode.A) && t > 0)
     {
-        if (Input.GetKey(KeyCode.Space))
-        {
-            Instantiate(ballPrefab);
-        }
-
-        if(Input.GetKey(KeyCode.A)&& t>0)
-        {
-            t -= Time.deltaTime/1;
-        }
-        if(Input.GetKey(KeyCode.D)&& t<1)
-        {
-            t += Time.deltaTime/1;
-        }
-        thingy.transform.position = Vector3.LerpUnclamped(a,b,curve.Evaluate(t));
-
-        // line.SetPosition(0, a);
-        // line.SetPosition(1, b);
-        render.Update();
+      t -= Time.deltaTime / 1;
     }
+    if (Input.GetKey(KeyCode.D) && t < 1)
+    {
+      t += Time.deltaTime / 1;
+    }
+    thingy.transform.position = Vector3.LerpUnclamped(a, b, curve.Evaluate(t));
+
+    // line.SetPosition(0, a);
+    // line.SetPosition(1, b);
+    render.Update();
+  }
 }
 
 [Serializable]
 public class Render
 {
-    Mono mono;
+  Mono mono;
 
-    public Mesh[] meshes;
-    public Material[] materials;
+  Mesh[] meshes;
+  Material[] materials;
 
-    public void Start(Mono mono)
+  public void Start(Mono mono)
+  {
+    this.mono = mono;
+
+    meshes = Resources.LoadAll<Mesh>("Meshes/");
+    materials = Resources.LoadAll<Material>("Materials/");
+  }
+
+  public void Update()
+  {
+    DrawMesh("icosphere", "default", mono.a, Quaternion.identity, 0.5f);
+    DrawMesh("icosphere", "default", mono.b, Quaternion.identity, 0.5f);
+  }
+
+  Matrix4x4 m4 = new Matrix4x4();
+  void DrawMesh(string mesh, string mat, Vector3 pos, Quaternion rot, float scale)
+  {
+    m4.SetTRS(pos, rot, Vector3.one * scale);
+    Graphics.DrawMesh(Mesh(mesh), m4, Mat(mat), 0);
+  }
+
+  public Material Mat(string name)
+  {
+    for (int i = 0; i < materials.Length; i++)
     {
-        this.mono = mono;
-
-        // meshes = Resources.LoadAll<Mesh>("Meshes/");
-        materials = Resources.LoadAll<Material>("Materials/");
+      if (name.ToLower() == materials[i].name.ToLower())
+      {
+        return materials[i];
+      }
     }
+    Debug.LogWarning("Material not found: " + name);
+    return null;
+  }
 
-    public void Update()
+  public Mesh Mesh(string name)
+  {
+    for (int i = 0; i < meshes.Length; i++)
     {
-        DrawMesh("Sphere", "Default", mono.b, Quaternion.identity, 1 / 2);
+      if (meshes[i].name.ToLower() == name.ToLower())
+      {
+        return meshes[i];
+      }
     }
-
-    Matrix4x4 m4 = new Matrix4x4();
-    void DrawMesh(string mesh, string mat, Vector3 pos, Quaternion rot, float scale)
-    {
-        m4.SetTRS(pos, rot, Vector3.one * scale);
-        Graphics.DrawMesh(GetMesh(mesh), m4, GetMat(mat), 0);
-    }
-
-    public Mesh GetMesh(string name)
-    {
-        for (int i = 0; i < meshes.Length; i++)
-        {
-            if (meshes[i].name.ToLower() == name.ToLower())
-            {
-                // Debug.Log(meshes[i].name);
-                return meshes[i];
-            }
-        }
-        Debug.LogWarning("Mesh not found: " + name);
-        return null;
-    }
-
-    public Material GetMat(string name)
-    {
-        for (int i = 0; i < materials.Length; i++)
-        {
-            if (name.ToLower() == materials[i].name.ToLower())
-            {
-                // Debug.Log(materials[i].name);
-                return materials[i];
-            }
-        }
-        Debug.LogWarning("Material not found: " + name);
-        return null;
-    }
+    Debug.LogWarning("Mesh not found: " + name);
+    return null;
+  }
 }
