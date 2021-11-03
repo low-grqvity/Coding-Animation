@@ -9,60 +9,61 @@ public class Mono : MonoBehaviour
   // public LineRenderer line;
   public Vector3 a, b;
   public float t;
-  public GameObject thingy;
-  public GameObject ballPrefab;
-  // Start is called before the first frame update
+  public GameObject thingy, ballPrefab;
+  public Vector3 target;
+  public Vector3[] appendage;
+  public bool kinematic;
+  
   void Start()
   {
     render.Start(this);
   }
 
-  // Update is called once per frame
   void Update()
   {
-    if (Input.GetKey(KeyCode.Space))
+    Vector3 mousePos = Input.mousePosition;
+    mousePos.z = 10;
+    target = Camera.main.ScreenToWorldPoint(mousePos);
+    target.z = 0;
+    if (kinematic)
     {
-      Instantiate(ballPrefab);
+        InverseKinematics(appendage, target);
     }
 
-    if (Input.GetKey(KeyCode.A) && t > 0)
-    {
-        if (Input.GetKey(KeyCode.Space))
-        {
-            Instantiate(ballPrefab);
-        }
-
-        if(Input.GetKey(KeyCode.A)&& t>0)
-        {
-            t -= Time.deltaTime/1;
-        }
-        if(Input.GetKey(KeyCode.D)&& t<1)
-        {
-            t += Time.deltaTime/1;
-        }
-        thingy.transform.position = Vector3.LerpUnclamped(a,b,curve.Evaluate(t));
-
-        // BagelOpera -> int bagelOpera = 0;
-        // if (*insert what you want to do*); -> for (int i = 0; i < 10; i++)
-        // def *function name* -> void NameFunction(int variable) { //code }
-        
-
-
-        
-
-        // line.SetPosition(0, a);
-        // line.SetPosition(1, b);
-        render.Update();
-    }
-    if (Input.GetKey(KeyCode.D) && t < 1)
-    {
-      t += Time.deltaTime / 1;
-    }
     thingy.transform.position = Vector3.LerpUnclamped(a, b, curve.Evaluate(t));
-
     // line.SetPosition(0, a);
     // line.SetPosition(1, b);
     render.Update();
+  }
+
+  const int maxIterations = 100;
+  const float minAcceptableDst = 0.01f;
+  public void InverseKinematics(Vector3[] points, Vector3 target) {
+    Vector3 origin = points[0];
+    float[] segmentLengths = new float[points.Length - 1];
+    for (int i = 0; i < segmentLengths.Length; i++) {
+        segmentLengths[i] = (points[i + 1] - points[i]).magnitude;
+    }
+
+    for (int iteration = 0; iteration < maxIterations; iteration++) {
+        bool startingFromTarget = iteration % 2 == 0;
+        // Reverse arrays to alternate between forward and backward passes
+        System.Array.Reverse(points);
+        System.Array.Reverse(segmentLengths);
+        points[0] = (startingFromTarget) ? target : origin;
+
+        // Constrain lengths
+        for (int i = 1; i < points.Length; i++) {
+            Vector3 dir = (points[i] - points[i - 1]).normalized;
+            points[i] = points[i - 1] + dir * segmentLengths[i - 1];
+        }
+
+        // Terminate if close enough to target
+        float dstToTarget = (points[points.Length - 1] - target).magnitude;
+        if (!startingFromTarget && dstToTarget <= minAcceptableDst) {
+            return;
+        }
+    }
   }
 }
 
@@ -86,6 +87,14 @@ public class Render
   {
     DrawMesh("icosphere", "default", mono.a, Quaternion.identity, 0.5f);
     DrawMesh("icosphere", "default", mono.b, Quaternion.identity, 0.5f);
+
+    for (int i = 0; i < mono.appendage.Length; i++)
+    {
+        Vector3 point = mono.appendage[i];
+        DrawMesh("icosphere", "default", point, Quaternion.identity, 0.1f);
+    }
+
+    DrawMesh("icosphere", "default", mono.target, Quaternion.identity, 0.2f);
   }
 
   Matrix4x4 m4 = new Matrix4x4();
