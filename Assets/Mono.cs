@@ -13,6 +13,8 @@ public class Mono : MonoBehaviour
   public Vector3 target;
   public Vector3[] appendage;
   public bool kinematic;
+
+  public Transform amongme;
   
   void Start()
   {
@@ -33,6 +35,18 @@ public class Mono : MonoBehaviour
     thingy.transform.position = Vector3.LerpUnclamped(a, b, curve.Evaluate(t));
     // line.SetPosition(0, a);
     // line.SetPosition(1, b);
+
+    Vector3 input = Vector3.zero;
+    input.x = Input.GetAxis("Horizontal");
+    input.z = Input.GetAxis("Vertical");
+    input = input.normalized;
+    amongme.position += input * Time.deltaTime * 3f;
+
+    if (input.magnitude > 0)
+    {
+      amongme.rotation=Quaternion.LookRotation(input) * Quaternion.Euler(Vector3.up * 180);
+    }
+
     render.Update();
   }
 
